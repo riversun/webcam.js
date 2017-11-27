@@ -1,0 +1,42 @@
+{
+  "name": "webcam.js",
+  "version": "1.0.0",
+  "description": "simple manager class for web camera",
+  "main": "index.js",
+  "scripts": {
+    "start": "run-p ex01",
+    "server:ex01": "http-server ./example/01_basic/ -p 7000 -o -c-1",
+    "server:ex02": "http-server ./example/02_multi_camera/ -p 7000 -o -c-1",
+    "server:ex03": "http-server ./example/03_continuous_capture/ -p 7000 -o -c-1",
+    "server:ex04": "http-server ./example/04_webgl/ -p 7000 -o -c-1",
+    "ex01": "run-p watch:example-01-basic server:ex01",
+    "ex02": "run-p watch:example-02-multi server:ex02",
+    "ex03": "run-p watch:example-03-continuous server:ex03",
+    "ex04": "run-p watch:example-04-webgl server:ex04",
+    "build": "browserify index.js --standalone WebCamera -o dist/webcam.js",
+    "watch:example-01-basic": "watchify index.js --standalone WebCamera -o example/01_basic/js/webcam.js --debug -v",
+    "watch:example-02-multi": "watchify index.js --standalone WebCamera -o example/02_multi_camera/js/webcam.js --debug -v",
+    "watch:example-03-continuous": "watchify index.js --standalone WebCamera -o example/03_continuous_capture/js/webcam.js --debug -v",
+    "watch:example-04-webgl": "watchify index.js --standalone WebCamera -o example/04_webgl/js/webcam.js --debug -v"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/riversun/webcam.js.git"
+  },
+  "keywords": [
+    "web",
+    "camera"
+  ],
+  "author": "Tom Misawa <riversun.org@gmail.com> (https://github.com/riversun)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/riversun/webcam.js/issues"
+  },
+  "homepage": "https://github.com/riversun/webcam.js#readme",
+  "devDependencies": {
+    "browserify": "^14.5.0",
+    "http-server": "^0.10.0",
+    "npm-run-all": "^4.1.2",
+    "watchify": "^3.9.0"
+  }
+}

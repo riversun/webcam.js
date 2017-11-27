@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>webcam.js example04 webgl</title>
+</head>
+
+<script type="text/javascript" charset="utf-8"
+        src="https://cdnjs.cloudflare.com/ajax/libs/three.js/87/three.min.js"></script>
+
+<script type="text/javascript" charset="utf-8"
+        src="js/webcam.js"></script>
+
+<body>
+<h3>webcam.js exmaple04 webcam video on the three.js mesh</h3>
+<span>Camera:</span>
+<select id="camera_selection"></select>
+<br/>
+<span>Control:</span>
+<button type=button id="start">START</button>
+<button type=button id="stop">STOP</button>
+<br/>
+<span id="container" style="width:640px;height:480px;"></span>
+
+<script>
+    <!--
+
+
+    /**
+     * Display WebCam's image on mesh of three.js and render it
+     */
+    var WebCamThree = (function () {
+
+        function WebCamThree(containerEle, videoEle) {
+            this.containerEle = containerEle;
+            this.camera = null;
+            this.scene = null;
+            this.renderer = null;
+            this.planeMesh = null;
+            this.count = 0;
+
+            this.texture = new THREE.VideoTexture(videoEle);
+            this.texture.minFilter = THREE.LinearFilter;
+            this.texture.magFilter = THREE.LinearFilter;
+            this.texture.format = THREE.RGBFormat;
+
+        }
+
+
+        WebCamThree.prototype.start = function () {
+            var _this = this;
+            _this.init();
+
+            //start rendering
+            _this.animate();
+
+
+        };
+
+        WebCamThree.prototype.stop = function () {
+            var _this = this;
+            _this.containerEle.removeChild(_this.renderer.domElement);
+        };
+
+        WebCamThree.prototype.init = function () {
+            var _this = this;
+
+            //Clear the container's internal elements
+            _this.containerEle.innerHTML = "";
+
+
+            var containerWidth = parseInt(_this.containerEle.style.width);
+            var containerHeight = parseInt(_this.containerEle.style.height);
+
+            //The size of the plane-mesh for camera image display in webgl 3D space
+            var webcamPlaneWidth = 800;
+            var webcamPlaneHeight = 600;
+
+            //Filed of View (°)
+            var fov = 30;
+
+            //If only parallel projection is enough,
+            // You can use THREE.OrthographicCamera instead of THREE.PerspectiveCamera.
+            _this.camera = new THREE.PerspectiveCamera(
+                fov,
+                webcamPlaneWidth / webcamPlaneHeight,
+                1,        //Nearest point to draw
+                10000     //Furthest point to draw
+            );
+
+            //Filed of View (radian)
+            var fovRad = fov / 180 * Math.PI;
+
+            var camPos = {
+                x: 0,
+                y: 0,
+                //When the camera is looking at (0, 0, 0) from above the z axis,
+                // adjust the camera altitude so that the plane-mesh for the webcam image is displayed JUST within the angle of view.
+                //As for webGL, same as openGL,for the z axis, the front direction is plus
+                z: webcamPlaneHeight / (2 * Math.tan(fovRad / 2))
+            };
+
+
+            //Locate camera
+            _this.camera.position.set(
+                camPos.x,//x
+                camPos.y,//y
+                camPos.z//z
+            );
+
+            _this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+            //Create a scene
+            _this.scene = new THREE.Scene();
+
+            //Create a material
+            var material = new THREE.MeshBasicMaterial({
+                map: _this.texture,
+                transparent: true,//
+                //side: THREE.BackSide,//
+                side: THREE.DoubleSide//
+            });
+
+            //Create a plane-shape for displaying video stream
+            var geometry = new THREE.PlaneBufferGeometry(webcamPlaneWidth, webcamPlaneHeight, 2, 2);
+
+            _this.planeMesh = new THREE.Mesh(
+                geometry, material
+            );
+
+
+            //Rotate the plane mesh by 180°,that is, turn the back-side
+            _this.planeMesh.rotation.y = Math.PI;
+
+            //Add plane mesh into the scene
+            _this.scene.add(_this.planeMesh);
+
+            _this.renderer = new THREE.WebGLRenderer(
+                {
+                    antialias: true,
+                    alpha: true //enabling alpha
+                }
+            );
+
+            //Set the GL's background color
+            _this.renderer.setClearColor(0x000000);
+
+            _this.renderer.setPixelRatio(window.devicePixelRatio);
+
+
+            //Set the renderer to be the same size as the container
+            _this.renderer.setSize(containerWidth, containerHeight);
+
+            _this.containerEle.appendChild(_this.renderer.domElement);
+
+        };
+
+        WebCamThree.prototype.animate = function () {
+            var _this = this;
+
+            //call requestAnimationFrame(loop)
+            requestAnimationFrame(function () {
+                _this.animate();
+            });
+
+            //process rendering
+            _this.renderer.render(_this.scene, _this.camera);
+
+            var angleRad = Math.PI + 1 * _this.count * ( Math.PI / 180.0);
+
+            _this.planeMesh.rotation.y = angleRad;
+
+            ++_this.count;
+
+        };
+
+        return WebCamThree;
+    }());
+
+
+    //////////////
+     var wcm = new WebCamera({
+        webcamParams: {
+            video: {
+                width: 800,
+                height: 600,
+            }
+            , optional: [
+                {minFrameRate: 15}]
+        }
+    });
+
+
+    var video = wcm.getVideoTag();
+
+    wcm.getCameraDevices().then(function (cameras) {
+
+        var camSelect = document.getElementById("camera_selection");
+        for (var i = 0; i < cameras.length; i++) {
+
+            var opt = document.createElement("option");
+            opt.value = i;
+            opt.cameraDevice = cameras[i];
+            opt.innerText = cameras[i].label;
+            camSelect.appendChild(opt);
+
+        }
+
+        camSelect.addEventListener("change", function () {
+
+            var cameraDevice = this.options[this.selectedIndex].cameraDevice;
+
+            wcm.stopCamera();
+            wcm.setCameraDevice(cameraDevice);
+            wcm.startCamera();
+        });
+
+        wcm.setCameraDevice(cameras[0]);
+        wcm.startCamera();
+    });
+
+
+    var container = document.getElementById('container');
+    var camRenderer = new WebCamThree(container, video);
+    camRenderer.start();
+
+    var btnStart = document.getElementById("start");
+    btnStart.addEventListener("click", function () {
+        wcm.startCamera();
+    });
+
+    var btnStop = document.getElementById("stop");
+    btnStop.addEventListener("click", function () {
+        wcm.stopCamera();
+    });
+
+
+    //-->
+</script>
+
+
+</body>
+</html>
+

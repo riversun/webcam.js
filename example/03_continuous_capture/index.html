@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>webcam.js example03 continuous capture</title>
+</head>
+
+<script type="text/javascript" charset="utf-8"
+        src="js/webcam.js"></script>
+
+<body>
+<h3>webcam.js exmaple03 continuous capture</h3>
+<span>Camera:</span>
+<select id="camera_selection"></select>
+<br/>
+<span>Control:</span>
+<button type=button id="start">START</button>
+<button type=button id="stop">STOP</button>
+<button type=button id="capture_rt">RealTime CAPTURE</button>
+<button type=button id="capture_rt_50">RealTime CAPTURE(50%)</button>
+<br/>
+<container id="container"></container>
+
+<canvas id="canvas"/>
+
+<script>
+    <!--
+
+    var wcm = new WebCamera({
+        //If "videoTag" is omitted, it is generated automatically
+        constraints: {
+            video: {
+                width: 640,
+                height: 480
+            }
+        }
+    });
+
+
+    //If "videoTag" is omitted, it is generated automatically and you can get it by "getVideoTag"
+    var container = document.getElementById("container");
+    container.appendChild(wcm.getVideoTag());
+
+    //get installed camera devices
+    wcm.getCameraDevices().then(function (cameras) {
+
+        var camSelect = document.getElementById("camera_selection");
+        for (var i = 0; i < cameras.length; i++) {
+
+            var opt = document.createElement("option");
+            opt.value = i;
+            opt.cameraDevice = cameras[i];
+            opt.innerText = cameras[i].label;
+            camSelect.appendChild(opt);
+
+        }
+        //register select's "change" event
+        camSelect.addEventListener("change", function () {
+
+            var cameraDevice = this.options[this.selectedIndex].cameraDevice;
+
+            wcm.stopCamera();
+            wcm.setCameraDevice(cameraDevice);
+            wcm.startCamera();
+        });
+
+        wcm.setCameraDevice(cameras[0]);
+        wcm.startCamera();
+    });
+
+
+    var btnStart = document.getElementById("start");
+    btnStart.addEventListener("click", function () {
+        wcm.startCamera().catch(function () {
+            console.log("Camera already started or camera not found.");
+        });
+    });
+
+    var btnStop = document.getElementById("stop");
+    btnStop.addEventListener("click", function () {
+        wcm.stopCamera();
+    });
+
+    var btnCapture = document.getElementById("capture_rt");
+    btnCapture.addEventListener("click", function () {
+
+        wcm.setOnSnapShotCallback(function (imageBitmap) {
+            var canvas = document.getElementById("canvas");
+            canvas.width = imageBitmap.width;
+            canvas.height = imageBitmap.height;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(imageBitmap, 0, 0);
+        });
+
+    });
+
+    var btnCapture50 = document.getElementById("capture_rt_50");
+    btnCapture50.addEventListener("click", function () {
+
+        //continuous capture with specfied size
+        wcm.setOnSnapShotCallback(function (imageBitmap) {
+            var canvas = document.getElementById("canvas");
+            canvas.width = imageBitmap.width;
+            canvas.height = imageBitmap.height;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(imageBitmap, 0, 0);
+        }, 320, 240);
+
+    });
+
+
+    //-->
+</script>
+
+
+</body>
+</html>
+

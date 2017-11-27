@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>webcam.js example01 classic approach</title>
+</head>
+
+
+<script type="text/javascript" charset="utf-8"
+        src="js/webcam.js"></script>
+
+<body>
+<h3>webcam.js exmaple01 capture image from camera with classic approach</h3>
+<span>Control:</span>
+<button type=button id="start">START</button>
+<button type=button id="stop">STOP</button>
+<button type=button id="capture">CAPTURE</button>
+<br/>
+<video id="video"></video>
+<img id="image"/>
+
+<script>
+    <!--
+    
+
+    var wcm = new WebCamera({
+        videoTag: document.getElementById("video"),
+        constraints: {
+            video: {
+                width: 640,
+                height: 480,
+            }
+        }
+    });
+
+    wcm.startCamera().then(function () {
+        //camera has been initialized
+    });
+
+    var btnStart = document.getElementById("start");
+    btnStart.addEventListener("click", function () {
+        //start camera
+        wcm.startCamera().catch(function () {
+            console.log("Camera already started or camera not found.");
+        });
+    });
+
+    var btnStop = document.getElementById("stop");
+    btnStop.addEventListener("click", function () {
+        //stop camera
+        wcm.stopCamera();
+    });
+
+    var btnCapture = document.getElementById("capture");
+    btnCapture.addEventListener("click", function () {
+        //capture image
+        var image = wcm.capture(320, 240);
+        var img = document.getElementById("image");
+        img.src = image;
+
+    });
+
+    //-->
+</script>
+
+
+</body>
+</html>
+
