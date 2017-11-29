@@ -18,6 +18,8 @@
 <button type=button id="takePhoto">TAKE PHOTO</button>
 <button type=button id="continuousStart">REAL-TIME START</button>
 <button type=button id="continuousStop">REAL-TIME STOP</button>
+<input type="checkbox" id="flipImage">Flip Image</input>
+
 
 <br/>
 <br/>
@@ -133,6 +135,12 @@
     var btnContEnd = document.getElementById("continuousStop");
     btnContEnd.addEventListener("click", function () {
         wcm.setOnSnapShotCallback(null);
+    });
+
+
+    var cbFlipImage = document.getElementById("flipImage");
+    cbFlipImage.addEventListener("click", function () {
+        wcm.setFlipImageEnabled(cbFlipImage.checked);
     });
 
 

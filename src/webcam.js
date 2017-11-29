@@ -248,10 +248,7 @@ var WebCamManager = (function () {
 
 
         if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
-
             // - if video stream is ready
-
-            // - if snapshotCallback set
 
             var _width = width;
             var _height = height;
@@ -262,6 +259,10 @@ var WebCamManager = (function () {
             canvas.width = _width;
             canvas.height = _height;
 
+            if (_this._isFlipImage) {
+                context.translate(canvas.width, 0);
+                context.scale(-1, 1);
+            }
 
             //capture image from media stream.
             context.drawImage(video, 0, 0, _width, _height);
@@ -320,7 +321,7 @@ var WebCamManager = (function () {
                             if (_this._isFlipImage) {
                                 canvas.width = imageBitmap.width;
                                 canvas.height = imageBitmap.height;
-                                
+
                                 context.translate(canvas.width, 0);
                                 context.scale(-1, 1);
                                 context.drawImage(imageBitmap, 0, 0);
