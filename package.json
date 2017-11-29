@@ -5,19 +5,25 @@
   "main": "index.js",
   "scripts": {
     "start": "run-p ex01",
+    "server:ex00": "http-server ./example/00_overview/ -p 7000 -o -c-1",
     "server:ex01": "http-server ./example/01_basic/ -p 7000 -o -c-1",
     "server:ex02": "http-server ./example/02_multi_camera/ -p 7000 -o -c-1",
     "server:ex03": "http-server ./example/03_continuous_capture/ -p 7000 -o -c-1",
     "server:ex04": "http-server ./example/04_webgl/ -p 7000 -o -c-1",
+    "server:ex05": "http-server ./example/05_skin_detection/ -p 7000 -o -c-1",
+    "ex00": "run-p watch:example-00-overview server:ex00",
     "ex01": "run-p watch:example-01-basic server:ex01",
     "ex02": "run-p watch:example-02-multi server:ex02",
     "ex03": "run-p watch:example-03-continuous server:ex03",
     "ex04": "run-p watch:example-04-webgl server:ex04",
+    "ex05": "run-p watch:example-05-skin-detection server:ex05",
     "build": "browserify index.js --standalone WebCamera -o dist/webcam.js",
+    "watch:example-00-overview": "watchify index.js --standalone WebCamera -o example/00_overview/js/webcam.js --debug -v",
     "watch:example-01-basic": "watchify index.js --standalone WebCamera -o example/01_basic/js/webcam.js --debug -v",
     "watch:example-02-multi": "watchify index.js --standalone WebCamera -o example/02_multi_camera/js/webcam.js --debug -v",
     "watch:example-03-continuous": "watchify index.js --standalone WebCamera -o example/03_continuous_capture/js/webcam.js --debug -v",
-    "watch:example-04-webgl": "watchify index.js --standalone WebCamera -o example/04_webgl/js/webcam.js --debug -v"
+    "watch:example-04-webgl": "watchify index.js --standalone WebCamera -o example/04_webgl/js/webcam.js --debug -v",
+    "watch:example-05-skin-detection": "watchify index.js --standalone WebCamera -o example/05_skin_detection/js/webcam.js --debug -v"
   },
   "repository": {
     "type": "git",
