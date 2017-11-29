@@ -59,6 +59,8 @@ var WebCamManager = (function () {
 
         this._useImageCapture = true;
         this._imageCapture = null;
+
+        this._isFlipImage = false;
     }
 
     /**
@@ -82,6 +84,15 @@ var WebCamManager = (function () {
         _this._useImageCapture = value;
     };
 
+
+    /**
+     * Set whether or not to flip the image when grabFrame/snapShotCallback is executed
+     * @param boolValue
+     */
+    WebCamManager.prototype.setFlipImageEnabled = function (boolValue) {
+        var _this = this;
+        _this._isFlipImage = boolValue;
+    };
 
     /**
      * Get installed camera devices
@@ -126,6 +137,7 @@ var WebCamManager = (function () {
             _this._snapShotCanvas = document.createElement("canvas");
 
         }
+
         return _this._snapShotCanvas;
     };
     /**
@@ -281,32 +293,53 @@ var WebCamManager = (function () {
 
         if (_this._useImageCapture) {
 
-            if (width && height) {
 
-                return new Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
 
-                    var context = _this._getSnapShotContext();
-                    var canvas = _this._getSnapShotCanvas();
+                var canvas = _this._getSnapShotCanvas();
+                var context = _this._getSnapShotContext();
 
-                    _this._getImageCapture().grabFrame()
-                        .then(function (imageBitmap) {
 
+                _this._getImageCapture().grabFrame()
+                    .then(function (imageBitmap) {
+
+                        if (width && height) {
                             canvas.width = width;
                             canvas.height = height;
-                            var ctx = canvas.getContext("2d");
-                            ctx.drawImage(imageBitmap, 0, 0, width, height);
+
+                            if (_this._isFlipImage) {
+                                context.translate(canvas.width, 0);
+                                context.scale(-1, 1);
+                            }
+                            context.drawImage(imageBitmap, 0, 0, width, height);
+
                             resolve(window.createImageBitmap(canvas));
 
-                        })
-                        .catch(function (e) {
+                        } else {
 
-                            reject(e);
-                        });
-                });
+                            if (_this._isFlipImage) {
+                                canvas.width = imageBitmap.width;
+                                canvas.height = imageBitmap.height;
+                                
+                                context.translate(canvas.width, 0);
+                                context.scale(-1, 1);
+                                context.drawImage(imageBitmap, 0, 0);
 
-            } else {
-                return _this._getImageCapture().grabFrame();
-            }
+                                resolve(window.createImageBitmap(canvas));
+
+                            } else {
+                                resolve(imageBitmap);
+                            }
+
+                        }
+
+                    })
+                    .catch(function (e) {
+                        reject(e);
+                    });
+            });
+
+
         }
 
         return new Promise(function executor4GrabFrame(resolve, reject) {
@@ -346,6 +379,10 @@ var WebCamManager = (function () {
 
     };
 
+    /**
+     * Take photo
+     * @returns {Promise}
+     */
     WebCamManager.prototype.takePhoto = function () {
         var _this = this;
 
@@ -589,15 +626,12 @@ var WebCamManager = (function () {
     WebCamManager.prototype._getImageCapture = function () {
         var _this = this;
 
-
         if (_this._useImageCapture && !_this._imageCapture) {
             _this._imageCapture = new ImageCapture(_this.getVideoTrack());
         }
 
         return _this._imageCapture;
-
     };
-
 
     return WebCamManager;
 }());
