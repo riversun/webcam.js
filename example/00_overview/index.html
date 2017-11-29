@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>webcam.js example</title>
+</head>
+
+<script type="text/javascript" charset="utf-8"
+        src="js/webcam.js"></script>
+
+<body>
+<h3>webcam.js example</h3>
+<span>Control:</span>
+<button type=button id="start">CAMERA START</button>
+<button type=button id="stop">CAMERA STOP</button>
+<button type=button id="capture">CAPTURE(classical)</button>
+<button type=button id="grabFrame">GRAB FRAME</button>
+<button type=button id="takePhoto">TAKE PHOTO</button>
+<button type=button id="continuousStart">REAL-TIME START</button>
+<button type=button id="continuousStop">REAL-TIME STOP</button>
+
+<br/>
+<br/>
+
+<table>
+    <tr>
+        <td valign="top"><span>Camera:</span><br/>
+            <div id="container"></div>
+        </td>
+        <td valign="top"><span>Image(HTMLImageElement):</span><br/> <img id="image"/></td>
+    </tr>
+    <tr>
+        <td valign="top"><span>Canvas:</span><br/>
+            <canvas id="canvas"/>
+        </td>
+        <td valign="top"></td>
+    </tr>
+
+
+</table>
+
+<script>
+    <!--
+
+    var wcm = new WebCamera({
+        //If "videoTag" is omitted, it is generated automatically
+        constraints: {
+            video: {
+                width: 320,
+                height: 240
+            }
+        }
+    });
+
+
+    var container = document.getElementById("container");
+    var videoTag = wcm.getVideoTag();
+    container.appendChild(videoTag);
+
+    wcm.startCamera();
+
+
+    var btnStart = document.getElementById("start");
+    btnStart.addEventListener("click", function () {
+        wcm.startCamera();
+    });
+
+    var btnStop = document.getElementById("stop");
+    btnStop.addEventListener("click", function () {
+        wcm.stopCamera();
+    });
+
+    var btnCapture = document.getElementById("capture");
+    btnCapture.addEventListener("click", function () {
+
+        //capture image in a classical way
+        var image = wcm.capture(160, 120);
+        var htmlImageEle = document.getElementById("image");
+        htmlImageEle.src = image;
+
+    });
+
+    var btnGrabFrame = document.getElementById("grabFrame");
+    btnGrabFrame.addEventListener("click", function () {
+        wcm.setUseImageCaptureAPI(true);
+        wcm.grabFrame().then(function (imageBitmap) {
+
+            var canvas = document.getElementById("canvas");
+            canvas.width = imageBitmap.width;
+            canvas.height = imageBitmap.height;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(imageBitmap, 0, 0);
+
+        })
+
+    });
+
+    var btnTakePhoto = document.getElementById("takePhoto");
+    btnTakePhoto.addEventListener("click", function () {
+        wcm.setUseImageCaptureAPI(true);
+        wcm.takePhoto()
+            .then(function (blob) {
+                return window.createImageBitmap(blob);
+            })
+            .then(function (imageBitmap) {
+
+                var canvas = document.getElementById("canvas");
+                canvas.width = imageBitmap.width;
+                canvas.height = imageBitmap.height;
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(imageBitmap, 0, 0);
+
+            });
+
+    });
+
+
+    var btnContStart = document.getElementById("continuousStart");
+    btnContStart.addEventListener("click", function () {
+
+        var canvasElement4Input = document.createElement("canvas");
+        var canvasElement4Output = document.getElementById("canvas");
+
+        var canvas2dContext4Input = canvasElement4Input.getContext("2d");
+        var canvas2dContext4Output = canvasElement4Output.getContext("2d");
+
+        //continuous capture with specfied size
+        wcm.setOnSnapShotCallback(function (imageBitmap) {
+
+            canvasElement4Input.width = imageBitmap.width;
+            canvasElement4Input.height = imageBitmap.height;
+
+            canvas2dContext4Input.drawImage(imageBitmap, 0, 0);
+
+            //getImageData
+            var inputImage = canvas2dContext4Input.getImageData(0, 0, imageBitmap.width, imageBitmap.height);
+            var outputImage = canvas2dContext4Output.createImageData(inputImage);
+
+            //detect skin area
+            detectSkinArea(inputImage, outputImage);
+
+            canvasElement4Output.width = imageBitmap.width;
+            canvasElement4Output.height = imageBitmap.height;
+
+            canvas2dContext4Output.putImageData(outputImage, 0, 0);
+
+        }, 160, 120);
+
+    });
+
+    var btnContEnd = document.getElementById("continuousStop");
+    btnContEnd.addEventListener("click", function () {
+        wcm.setOnSnapShotCallback(null);
+    });
+
+
+    function detectSkinArea(inputImage, outputImage) {
+        var inp = inputImage.data, outp = outputImage.data;
+
+
+        var r, g, b, h, s, v, colorVal;
+        var i;
+        for (i = 0; i < inp.length; i += 4) {
+
+            r = inp[i];
+            g = inp[i + 1];
+            b = inp[i + 2];
+
+            var h, // 0-360
+                s, // 0.0-1.0
+                v, // 0.0-1.0
+                max = Math.max(Math.max(r, g), b),
+                min = Math.min(Math.min(r, g), b);
+
+            if (max == min) {
+                h = 0;
+            } else if (max == r) {
+                h = 60 * (g - b) / (max - min) + 0;
+            } else if (max == g) {
+                h = (60 * (b - r) / (max - min)) + 120;
+            } else {
+                h = (60 * (r - g) / (max - min)) + 240;
+            }
+
+            while (h < 0) {
+                h += 360;
+            }
+            s = (max == 0) ? 0 : (max - min) / max;//* 255;
+            v = max / 255;
+
+            colorVal = 0;
+
+            //specify skin-color range
+            if (0 < h && h < 50 && 0.23 < s && s < 0.68) {
+                colorVal = 255;
+            } else {
+                colorVal = 128;
+            }
+
+            outp[i] = colorVal;     //red
+            outp[i + 1] = colorVal; //green
+            outp[i + 2] = colorVal; //blue
+            outp[i + 3] = 255;      //alpha
+        }
+
+        outputImage.width = inputImage.width;
+        outputImage.height = inputImage.height;
+
+        return outputImage;
+    }
+
+    //-->
+</script>
+
+
+</body>
+</html>
+
