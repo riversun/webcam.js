@@ -52,7 +52,7 @@ var WebCamManager = (function () {
         this._onSnapShotCallback = null;
         this._snapShotSize = {
             width: 640, height: 480
-        }
+        };
         this._snapShotCanvas = null;
         this._snapShotContext = null;
         this._cameraDevice = null;
@@ -80,7 +80,8 @@ var WebCamManager = (function () {
     WebCamManager.prototype.setUseImageCaptureAPI = function (value) {
         var _this = this;
         _this._useImageCapture = value;
-    }
+    };
+
 
     /**
      * Get installed camera devices
@@ -126,7 +127,7 @@ var WebCamManager = (function () {
 
         }
         return _this._snapShotCanvas;
-    }
+    };
     /**
      * Returns context(canvas context) for internal draw
      * @param device
@@ -140,7 +141,7 @@ var WebCamManager = (function () {
 
         }
         return _this._snapShotContext;
-    }
+    };
     /**
      * Start camera streaming
      * @param device
@@ -176,6 +177,9 @@ var WebCamManager = (function () {
         if (width && height) {
             _this._snapShotSize.width = width;
             _this._snapShotSize.height = height;
+        } else {
+            _this._snapShotSize.width = null;
+            _this._snapShotSize.height = null;
         }
 
 
@@ -274,6 +278,7 @@ var WebCamManager = (function () {
 
         var video = _this._videoTag;
 
+
         if (_this._useImageCapture) {
 
             if (width && height) {
@@ -294,6 +299,7 @@ var WebCamManager = (function () {
 
                         })
                         .catch(function (e) {
+
                             reject(e);
                         });
                 });
@@ -432,7 +438,6 @@ var WebCamManager = (function () {
             } else {
 
 
-                
                 var webcamParam = _this._webcamParams;
 
 
@@ -455,8 +460,13 @@ var WebCamManager = (function () {
 
                     _this._localMediaStream = mediaStream;
 
+                    if (typeof _this._videoTag.srcObject !== "undefined") {
+                        _this._videoTag.srcObject = mediaStream;
+                    } else {
+                        _this._videoTag.src = window.URL && window.URL.createObjectURL(mediaStream);
+                    }
 
-                    _this._videoTag.srcObject = mediaStream;
+
                     _this.getCapabilities();
 
                     _this._videoTag.play();
@@ -506,7 +516,7 @@ var WebCamManager = (function () {
         if (track) {
             var capabilities = track.getCapabilities();
         }
-    }
+    };
 
     /**
      * Returns video track
