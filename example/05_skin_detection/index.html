@@ -13,31 +13,12 @@
 <span>Control:</span>
 <button type=button id="start">CAMERA START</button>
 <button type=button id="stop">CAMERA STOP</button>
-<button type=button id="capture">CAPTURE(classical)</button>
-<button type=button id="grabFrame">GRAB FRAME</button>
-<button type=button id="takePhoto">TAKE PHOTO</button>
-<button type=button id="continuousStart">REAL-TIME START</button>
-<button type=button id="continuousStop">REAL-TIME STOP</button>
 
 <br/>
-<br/>
 
-<table>
-    <tr>
-        <td valign="top"><span>Camera:</span><br/>
-            <div id="container"></div>
-        </td>
-        <td valign="top"><span>Image(HTMLImageElement):</span><br/> <img id="image"/></td>
-    </tr>
-    <tr>
-        <td valign="top"><span>Canvas:</span><br/>
-            <canvas id="canvas"/>
-        </td>
-        <td valign="top"></td>
-    </tr>
+<span id="container"></span>
+<canvas id="canvas"/>
 
-
-</table>
 
 <script>
     <!--
@@ -68,89 +49,6 @@
     var btnStop = document.getElementById("stop");
     btnStop.addEventListener("click", function () {
         wcm.stopCamera();
-    });
-
-    var btnCapture = document.getElementById("capture");
-    btnCapture.addEventListener("click", function () {
-
-        //capture image in a classical way
-        var image = wcm.capture(160, 120);
-        var htmlImageEle = document.getElementById("image");
-        htmlImageEle.src = image;
-
-    });
-
-    var btnGrabFrame = document.getElementById("grabFrame");
-    btnGrabFrame.addEventListener("click", function () {
-        wcm.setUseImageCaptureAPI(true);
-        wcm.grabFrame().then(function (imageBitmap) {
-
-            var canvas = document.getElementById("canvas");
-            canvas.width = imageBitmap.width;
-            canvas.height = imageBitmap.height;
-            var ctx = canvas.getContext("2d");
-            ctx.drawImage(imageBitmap, 0, 0);
-
-        })
-
-    });
-
-    var btnTakePhoto = document.getElementById("takePhoto");
-    btnTakePhoto.addEventListener("click", function () {
-        wcm.setUseImageCaptureAPI(true);
-        wcm.takePhoto()
-            .then(function (blob) {
-                return window.createImageBitmap(blob);
-            })
-            .then(function (imageBitmap) {
-
-                var canvas = document.getElementById("canvas");
-                canvas.width = imageBitmap.width;
-                canvas.height = imageBitmap.height;
-                var ctx = canvas.getContext("2d");
-                ctx.drawImage(imageBitmap, 0, 0);
-
-            });
-
-    });
-
-
-    var btnContStart = document.getElementById("continuousStart");
-    btnContStart.addEventListener("click", function () {
-
-        var canvasElement4Input = document.createElement("canvas");
-        var canvasElement4Output = document.getElementById("canvas");
-
-        var canvas2dContext4Input = canvasElement4Input.getContext("2d");
-        var canvas2dContext4Output = canvasElement4Output.getContext("2d");
-
-        //continuous capture with specfied size
-        wcm.setOnSnapShotCallback(function (imageBitmap) {
-
-            canvasElement4Input.width = imageBitmap.width;
-            canvasElement4Input.height = imageBitmap.height;
-
-            canvas2dContext4Input.drawImage(imageBitmap, 0, 0);
-
-            //getImageData
-            var inputImage = canvas2dContext4Input.getImageData(0, 0, imageBitmap.width, imageBitmap.height);
-            var outputImage = canvas2dContext4Output.createImageData(inputImage);
-
-            //detect skin area
-            detectSkinArea(inputImage, outputImage);
-
-            canvasElement4Output.width = imageBitmap.width;
-            canvasElement4Output.height = imageBitmap.height;
-
-            canvas2dContext4Output.putImageData(outputImage, 0, 0);
-
-        }, 160, 120);
-
-    });
-
-    var btnContEnd = document.getElementById("continuousStop");
-    btnContEnd.addEventListener("click", function () {
-        wcm.setOnSnapShotCallback(null);
     });
 
 
@@ -208,6 +106,34 @@
 
         return outputImage;
     }
+
+    var canvasElement4Input = document.createElement("canvas");
+    var canvasElement4Output = document.getElementById("canvas");
+
+    var canvas2dContext4Input = canvasElement4Input.getContext("2d");
+    var canvas2dContext4Output = canvasElement4Output.getContext("2d");
+
+    //continuous capture with specfied size
+    wcm.setOnSnapShotCallback(function (imageBitmap) {
+
+        canvasElement4Input.width = imageBitmap.width;
+        canvasElement4Input.height = imageBitmap.height;
+
+        canvas2dContext4Input.drawImage(imageBitmap, 0, 0);
+
+        //getImageData
+        var inputImage = canvas2dContext4Input.getImageData(0, 0, imageBitmap.width, imageBitmap.height);
+        var outputImage = canvas2dContext4Output.createImageData(inputImage);
+
+        //detect skin area
+        detectSkinArea(inputImage, outputImage);
+
+        canvasElement4Output.width = imageBitmap.width;
+        canvasElement4Output.height = imageBitmap.height;
+
+        canvas2dContext4Output.putImageData(outputImage, 0, 0);
+
+    }, 320, 240);
 
     //-->
 </script>
