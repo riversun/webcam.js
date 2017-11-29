@@ -1,6 +1,6 @@
 {
   "name": "webcam.js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "simple manager class for web camera",
   "main": "index.js",
   "scripts": {

@@ -60,13 +60,15 @@ var WebCamManager = (function () {
         this._onSnapShotCallback = null;
         this._snapShotSize = {
             width: 640, height: 480
-        }
+        };
         this._snapShotCanvas = null;
         this._snapShotContext = null;
         this._cameraDevice = null;
 
         this._useImageCapture = true;
         this._imageCapture = null;
+
+        this._isFlipImage = false;
     }
 
     /**
@@ -88,7 +90,17 @@ var WebCamManager = (function () {
     WebCamManager.prototype.setUseImageCaptureAPI = function (value) {
         var _this = this;
         _this._useImageCapture = value;
-    }
+    };
+
+
+    /**
+     * Set whether or not to flip the image when grabFrame/snapShotCallback is executed
+     * @param boolValue
+     */
+    WebCamManager.prototype.setFlipImageEnabled = function (boolValue) {
+        var _this = this;
+        _this._isFlipImage = boolValue;
+    };
 
     /**
      * Get installed camera devices
@@ -133,8 +145,9 @@ var WebCamManager = (function () {
             _this._snapShotCanvas = document.createElement("canvas");
 
         }
+
         return _this._snapShotCanvas;
-    }
+    };
     /**
      * Returns context(canvas context) for internal draw
      * @param device
@@ -148,7 +161,7 @@ var WebCamManager = (function () {
 
         }
         return _this._snapShotContext;
-    }
+    };
     /**
      * Start camera streaming
      * @param device
@@ -184,8 +197,10 @@ var WebCamManager = (function () {
         if (width && height) {
             _this._snapShotSize.width = width;
             _this._snapShotSize.height = height;
+        } else {
+            _this._snapShotSize.width = null;
+            _this._snapShotSize.height = null;
         }
-
 
         requestAnimationFrame(_this._snapShotLoop.bind(_this));
 
@@ -217,8 +232,6 @@ var WebCamManager = (function () {
 
                         //console.error("frame dropped error=" + e);
                     });
-            } else {
-                requestAnimationFrame(_this._snapShotLoop.bind(_this));
             }
 
         }
@@ -240,10 +253,7 @@ var WebCamManager = (function () {
 
 
         if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
-
             // - if video stream is ready
-
-            // - if snapshotCallback set
 
             var _width = width;
             var _height = height;
@@ -254,6 +264,10 @@ var WebCamManager = (function () {
             canvas.width = _width;
             canvas.height = _height;
 
+            if (_this._isFlipImage) {
+                context.translate(canvas.width, 0);
+                context.scale(-1, 1);
+            }
 
             //capture image from media stream.
             context.drawImage(video, 0, 0, _width, _height);
@@ -282,33 +296,56 @@ var WebCamManager = (function () {
 
         var video = _this._videoTag;
 
+
         if (_this._useImageCapture) {
 
-            if (width && height) {
 
-                return new Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
 
-                    var context = _this._getSnapShotContext();
-                    var canvas = _this._getSnapShotCanvas();
+                var canvas = _this._getSnapShotCanvas();
+                var context = _this._getSnapShotContext();
 
-                    _this._getImageCapture().grabFrame()
-                        .then(function (imageBitmap) {
 
+                _this._getImageCapture().grabFrame()
+                    .then(function (imageBitmap) {
+
+                        if (width && height) {
                             canvas.width = width;
                             canvas.height = height;
-                            var ctx = canvas.getContext("2d");
-                            ctx.drawImage(imageBitmap, 0, 0, width, height);
+
+                            if (_this._isFlipImage) {
+                                context.translate(canvas.width, 0);
+                                context.scale(-1, 1);
+                            }
+                            context.drawImage(imageBitmap, 0, 0, width, height);
+
                             resolve(window.createImageBitmap(canvas));
 
-                        })
-                        .catch(function (e) {
-                            reject(e);
-                        });
-                });
+                        } else {
 
-            } else {
-                return _this._getImageCapture().grabFrame();
-            }
+                            if (_this._isFlipImage) {
+                                canvas.width = imageBitmap.width;
+                                canvas.height = imageBitmap.height;
+
+                                context.translate(canvas.width, 0);
+                                context.scale(-1, 1);
+                                context.drawImage(imageBitmap, 0, 0);
+
+                                resolve(window.createImageBitmap(canvas));
+
+                            } else {
+                                resolve(imageBitmap);
+                            }
+
+                        }
+
+                    })
+                    .catch(function (e) {
+                        reject(e);
+                    });
+            });
+
+
         }
 
         return new Promise(function executor4GrabFrame(resolve, reject) {
@@ -348,6 +385,10 @@ var WebCamManager = (function () {
 
     };
 
+    /**
+     * Take photo
+     * @returns {Promise}
+     */
     WebCamManager.prototype.takePhoto = function () {
         var _this = this;
 
@@ -440,7 +481,6 @@ var WebCamManager = (function () {
             } else {
 
 
-                
                 var webcamParam = _this._webcamParams;
 
 
@@ -463,8 +503,13 @@ var WebCamManager = (function () {
 
                     _this._localMediaStream = mediaStream;
 
+                    if (typeof _this._videoTag.srcObject !== "undefined") {
+                        _this._videoTag.srcObject = mediaStream;
+                    } else {
+                        _this._videoTag.src = window.URL && window.URL.createObjectURL(mediaStream);
+                    }
 
-                    _this._videoTag.srcObject = mediaStream;
+
                     _this.getCapabilities();
 
                     _this._videoTag.play();
@@ -514,7 +559,7 @@ var WebCamManager = (function () {
         if (track) {
             var capabilities = track.getCapabilities();
         }
-    }
+    };
 
     /**
      * Returns video track
@@ -587,15 +632,12 @@ var WebCamManager = (function () {
     WebCamManager.prototype._getImageCapture = function () {
         var _this = this;
 
-
         if (_this._useImageCapture && !_this._imageCapture) {
             _this._imageCapture = new ImageCapture(_this.getVideoTrack());
         }
 
         return _this._imageCapture;
-
     };
-
 
     return WebCamManager;
 }());
