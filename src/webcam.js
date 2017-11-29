@@ -194,7 +194,6 @@ var WebCamManager = (function () {
             _this._snapShotSize.height = null;
         }
 
-
         requestAnimationFrame(_this._snapShotLoop.bind(_this));
 
     };
@@ -225,8 +224,6 @@ var WebCamManager = (function () {
 
                         //console.error("frame dropped error=" + e);
                     });
-            } else {
-                requestAnimationFrame(_this._snapShotLoop.bind(_this));
             }
 
         }
