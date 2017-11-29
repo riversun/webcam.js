@@ -14,8 +14,15 @@ webcam.js is a javascript library for web-camera handling
 The status of [**ImageCapture API**](https://www.w3.org/TR/image-capture/#imagecaptureapi) is now(11.27.2017) WORKING DRAFT.  
 But the experimental implementation is available on chrome 59+ etc.
 
-# Example
-Examples here
+# Examples
+- [01.Get Snapshot](https://riversun.github.io/webcam.js/example/01_basic/)
+- [02.Take Photo](https://riversun.github.io/webcam.js/example/02_multi_camera/)
+- [03.Capture Continuously](https://riversun.github.io/webcam.js/example/03_continuous_capture/)
+- [04.Web Camera on WebGL](https://riversun.github.io/webcam.js/example/04_webgl/)
+- [05.Skin Detection](https://riversun.github.io/webcam.js/example/05_skin_detection/)
+
+
+
 
 # Usage
 
